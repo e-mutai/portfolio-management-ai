@@ -1,11 +1,9 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import authService, { User } from '@/services/authService';
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, userData?: any) => Promise<{ error: any }>;
@@ -16,57 +14,73 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    // Check for existing user on mount
+    // For demo purposes, create a mock user if none exists
+    const currentUser = authService.getCurrentUser();
+    if (currentUser && authService.isAuthenticated()) {
+      setUser(currentUser);
+    } else {
+      // Create a demo user for testing without backend
+      const demoUser: User = {
+        id: 'demo-user-1',
+        firstName: 'Demo',
+        lastName: 'User',
+        email: 'demo@aiser.ai',
+        isEmailVerified: true,
+        investmentExperience: 'intermediate' as const,
+        riskTolerance: 'moderate' as const,
+        investmentGoals: ['growth', 'retirement'],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      setUser(demoUser);
+    }
+    setLoading(false);
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      const response = await authService.login({ email, password });
+      if (response.success) {
+        setUser(response.data.user);
+        return { error: null };
+      }
+      return { error: { message: 'Login failed' } };
+    } catch (error: any) {
+      return { error: { message: error.response?.data?.error || 'Login failed' } };
+    }
   };
 
   const signUp = async (email: string, password: string, userData?: any) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: userData
+    try {
+      const { firstName, lastName } = userData || {};
+      const response = await authService.register({ 
+        firstName: firstName || '', 
+        lastName: lastName || '', 
+        email, 
+        password 
+      });
+      
+      if (response.success) {
+        setUser(response.data.user);
+        return { error: null };
       }
-    });
-    return { error };
+      return { error: { message: 'Registration failed' } };
+    } catch (error: any) {
+      return { error: { message: error.response?.data?.error || 'Registration failed' } };
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    authService.logout();
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

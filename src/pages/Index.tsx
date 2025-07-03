@@ -17,7 +17,7 @@ const Index = () => {
                   <div className="flex items-center justify-between w-full md:w-auto">
                     <div className="flex items-center space-x-2">
                       <TrendingUp className="w-8 h-8 text-green-600" />
-                      <span className="text-2xl font-bold text-gray-900">Kenya Wealth AI</span>
+                      <span className="text-2xl font-bold text-gray-900">Aiser</span>
                     </div>
                   </div>
                 </div>
@@ -36,11 +36,11 @@ const Index = () => {
               <div className="text-center lg:text-left">
                 <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
                   <span className="block">AI-Powered Investment</span>
-                  <span className="block text-green-600">Advisory for Kenya</span>
+                  <span className="block text-green-600">Advisory Platform</span>
                 </h1>
                 <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                  Make smarter investment decisions with our AI-driven platform tailored for the Kenyan market. 
-                  Get personalized recommendations, real-time NSE data, and comprehensive risk assessments.
+                  Make smarter investment decisions with our AI-driven platform for global markets. 
+                  Get personalized recommendations, real-time market data, and comprehensive risk assessments.
                 </p>
                 <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
                   <div className="rounded-md shadow">
@@ -72,7 +72,7 @@ const Index = () => {
               Everything you need to invest wisely
             </p>
             <p className="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-              Our platform combines cutting-edge AI technology with deep knowledge of the Kenyan financial market.
+              Our platform combines cutting-edge AI technology with deep knowledge of global financial markets.
             </p>
           </div>
 
@@ -121,7 +121,7 @@ const Index = () => {
                   </div>
                   <CardTitle>Portfolio Management</CardTitle>
                   <CardDescription>
-                    Track your investments across stocks, bonds, SACCOs, and other Kenyan financial instruments.
+                    Track your investments across stocks, bonds, ETFs, and other financial instruments.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -133,7 +133,7 @@ const Index = () => {
                   </div>
                   <CardTitle>Market Insights</CardTitle>
                   <CardDescription>
-                    Stay informed with expert analysis on Kenyan market trends, economic indicators, and investment opportunities.
+                    Stay informed with expert analysis on market trends, economic indicators, and investment opportunities.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -159,10 +159,10 @@ const Index = () => {
         <div className="max-w-2xl mx-auto text-center py-16 px-4 sm:py-20 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
             <span className="block">Ready to start investing?</span>
-            <span className="block">Join Kenya Wealth AI today.</span>
+            <span className="block">Join Aiser today.</span>
           </h2>
           <p className="mt-4 text-lg leading-6 text-green-100">
-            Take control of your financial future with AI-powered investment guidance tailored for Kenya.
+            Take control of your financial future with AI-powered investment guidance.
           </p>
           <Link to="/auth">
             <Button size="lg" variant="secondary" className="mt-8">
