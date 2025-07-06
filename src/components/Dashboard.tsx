@@ -59,11 +59,11 @@ const Dashboard = () => {
 
   // Generate portfolio holdings allocation data
   const allocationData = [
-    { name: 'Safaricom (SCOM)', value: 12500, percentage: 35, color: '#22c55e' },
-    { name: 'Equity Bank (EQTY)', value: 8900, percentage: 25, color: '#3b82f6' },
-    { name: 'KCB Group (KCB)', value: 6400, percentage: 18, color: '#f59e0b' },
-    { name: 'EABL', value: 4200, percentage: 12, color: '#ef4444' },
-    { name: 'Others', value: 3500, percentage: 10, color: '#8b5cf6' }
+    { name: 'Safaricom (SCOM)', value: 12500, percentage: 35, color: 'hsl(var(--primary))' },
+    { name: 'Equity Bank (EQTY)', value: 8900, percentage: 25, color: 'hsl(var(--accent))' },
+    { name: 'KCB Group (KCB)', value: 6400, percentage: 18, color: 'hsl(var(--warning))' },
+    { name: 'EABL', value: 4200, percentage: 12, color: 'hsl(var(--destructive))' },
+    { name: 'Others', value: 3500, percentage: 10, color: 'hsl(var(--muted))' }
   ];
 
   const handleSignOut = async () => {
@@ -92,8 +92,8 @@ const Dashboard = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your dashboard...</p>
         </div>
       </div>
     );
@@ -104,9 +104,9 @@ const Dashboard = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <BarChart3 className="h-12 w-12 text-red-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to Load Market Data</h3>
-          <p className="text-gray-500 mb-4">{marketError}</p>
+          <BarChart3 className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">Unable to Load Market Data</h3>
+          <p className="text-muted-foreground mb-4">{marketError}</p>
           <Button onClick={refreshMarket}>Try Again</Button>
         </div>
       </div>
@@ -114,20 +114,20 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-card shadow-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <TrendingUp className="w-8 h-8 text-green-600" />
-              <h1 className="text-2xl font-bold text-gray-900">Aiser</h1>
+              <TrendingUp className="w-8 h-8 text-primary" />
+              <h1 className="text-2xl font-bold text-foreground">Aiser</h1>
             </div>
             <div className="flex items-center space-x-4">
               {/* Market Status */}
               <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${marketLoading ? 'bg-yellow-400' : 'bg-green-400'}`}></div>
-                <span className="text-xs text-gray-600">
+                <div className={`w-2 h-2 rounded-full ${marketLoading ? 'bg-warning' : 'bg-success'}`}></div>
+                <span className="text-xs text-muted-foreground">
                   {marketLoading ? 'Loading...' : `${marketData.length} stocks`}
                 </span>
                 <Button 
@@ -139,7 +139,7 @@ const Dashboard = () => {
                   <RefreshCw className={`w-3 h-3 ${marketLoading ? 'animate-spin' : ''}`} />
                 </Button>
               </div>
-              <span className="text-sm text-gray-600">Welcome, {user?.email}</span>
+              <span className="text-sm text-muted-foreground">Welcome, {user?.email}</span>
               <Button variant="outline" onClick={handleSignOut} size="sm">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
@@ -152,13 +152,13 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Data Status Banner */}
         {marketError && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="mb-6 p-4 bg-warning/10 border border-warning/20 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <RefreshCw className="h-5 w-5 text-yellow-600 mr-2" />
+                <RefreshCw className="h-5 w-5 text-warning mr-2" />
                 <div>
-                  <h4 className="text-sm font-medium text-yellow-800">Data Issue</h4>
-                  <p className="text-sm text-yellow-700">{marketError}</p>
+                  <h4 className="text-sm font-medium text-warning-foreground">Data Issue</h4>
+                  <p className="text-sm text-warning-foreground/80">{marketError}</p>
                 </div>
               </div>
               <Button size="sm" variant="outline" onClick={refreshMarket}>
@@ -169,9 +169,9 @@ const Dashboard = () => {
         )}
 
         {lastUpdated && (
-          <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center justify-center text-sm text-green-700">
-              <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+          <div className="mb-6 p-3 bg-success/10 border border-success/20 rounded-lg">
+            <div className="flex items-center justify-center text-sm text-success-foreground">
+              <div className="w-2 h-2 bg-success rounded-full mr-2 animate-pulse"></div>
               Live NSE data • Last updated {new Date(lastUpdated).toLocaleTimeString()}
             </div>
           </div>
@@ -196,7 +196,7 @@ const Dashboard = () => {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">+KES 12,234</div>
+              <div className="text-2xl font-bold text-success">+KES 12,234</div>
               <p className="text-xs text-muted-foreground">+8.5% portfolio return</p>
             </CardContent>
           </Card>
@@ -209,7 +209,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold">
                 {marketLoading ? (
-                  <div className="animate-pulse bg-gray-200 h-8 w-20 rounded"></div>
+                  <div className="animate-pulse bg-muted h-8 w-20 rounded"></div>
                 ) : marketSummary ? (
                   marketSummary.value.toFixed(2)
                 ) : (
@@ -217,10 +217,10 @@ const Dashboard = () => {
                 )}
               </div>
               <p className={`text-xs ${
-                marketSummary && marketSummary.changePercent >= 0 ? 'text-green-600' : 'text-red-600'
+                marketSummary && marketSummary.changePercent >= 0 ? 'text-success' : 'text-destructive'
               }`}>
                 {marketLoading ? (
-                  <div className="animate-pulse bg-gray-200 h-4 w-16 rounded"></div>
+                  <div className="animate-pulse bg-muted h-4 w-16 rounded"></div>
                 ) : marketSummary ? (
                   `${marketSummary.changePercent >= 0 ? '+' : ''}${formatPercentage(marketSummary.changePercent)} today`
                 ) : (
@@ -254,7 +254,7 @@ const Dashboard = () => {
             <TabsTrigger value="holdings">Holdings</TabsTrigger>
             <TabsTrigger value="market">Market</TabsTrigger>
             <TabsTrigger value="ai-insights" className="flex items-center gap-2">
-              <Brain className="h-4 w-4 text-purple-600" />
+              <Brain className="h-4 w-4 text-accent" />
               <span>AI Insights</span>
               <Badge variant="secondary" className="ml-1 text-xs">
                 NEW
@@ -277,7 +277,7 @@ const Dashboard = () => {
                       <XAxis dataKey="month" />
                       <YAxis />
                       <Tooltip formatter={(value) => [formatCurrency(Number(value), 'KES'), 'Value']} />
-                      <Line type="monotone" dataKey="value" stroke="#22c55e" strokeWidth={2} />
+                      <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -315,7 +315,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardHeader className="text-center">
-                  <Target className="h-8 w-8 mx-auto text-blue-600 mb-2" />
+                  <Target className="h-8 w-8 mx-auto text-primary mb-2" />
                   <CardTitle className="text-lg">Risk Assessment</CardTitle>
                   <CardDescription>Analyze your portfolio risk profile</CardDescription>
                 </CardHeader>
@@ -323,7 +323,7 @@ const Dashboard = () => {
 
               <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardHeader className="text-center">
-                  <Brain className="h-8 w-8 mx-auto text-purple-600 mb-2" />
+                  <Brain className="h-8 w-8 mx-auto text-accent mb-2" />
                   <CardTitle className="text-lg">AI Recommendations</CardTitle>
                   <CardDescription>Get personalized investment advice</CardDescription>
                 </CardHeader>
@@ -331,7 +331,7 @@ const Dashboard = () => {
 
               <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardHeader className="text-center">
-                  <BarChart3 className="h-8 w-8 mx-auto text-green-600 mb-2" />
+                  <BarChart3 className="h-8 w-8 mx-auto text-success mb-2" />
                   <CardTitle className="text-lg">Market Analysis</CardTitle>
                   <CardDescription>Explore market trends and insights</CardDescription>
                 </CardHeader>
@@ -353,11 +353,11 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8">
-                  <div className="text-gray-400 mb-4">
+                  <div className="text-muted-foreground mb-4">
                     <Target className="h-12 w-12 mx-auto mb-2" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Holdings Yet</h3>
-                  <p className="text-gray-500 mb-4">Start building your portfolio by adding your first stock from the {marketData.length} available NSE stocks.</p>
+                  <h3 className="text-lg font-medium text-foreground mb-2">No Holdings Yet</h3>
+                  <p className="text-muted-foreground mb-4">Start building your portfolio by adding your first stock from the {marketData.length} available NSE stocks.</p>
                   <Button>
                     <Target className="h-4 w-4 mr-2" />
                     Add Your First Holding
@@ -385,10 +385,10 @@ const Dashboard = () => {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Top Gainers</CardTitle>
-                    <TrendingUp className="h-4 w-4 text-green-600" />
+                    <TrendingUp className="h-4 w-4 text-success" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-green-600">{gainers.length}</div>
+                    <div className="text-2xl font-bold text-success">{gainers.length}</div>
                     <p className="text-xs text-muted-foreground">Stocks moving up</p>
                   </CardContent>
                 </Card>
@@ -396,10 +396,10 @@ const Dashboard = () => {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Top Losers</CardTitle>
-                    <TrendingDown className="h-4 w-4 text-red-600" />
+                    <TrendingDown className="h-4 w-4 text-destructive" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-red-600">{losers.length}</div>
+                    <div className="text-2xl font-bold text-destructive">{losers.length}</div>
                     <p className="text-xs text-muted-foreground">Stocks moving down</p>
                   </CardContent>
                 </Card>
@@ -423,7 +423,7 @@ const Dashboard = () => {
                 {/* Top Gainers */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-green-600">
+                    <CardTitle className="flex items-center gap-2 text-success">
                       <TrendingUp className="h-5 w-5" />
                       Top Gainers
                     </CardTitle>
@@ -432,25 +432,25 @@ const Dashboard = () => {
                   <CardContent>
                     <div className="space-y-3">
                       {gainers.slice(0, 8).map((stock: any, index: number) => (
-                        <div key={stock.symbol} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                        <div key={stock.symbol} className="flex items-center justify-between p-3 bg-success/10 rounded-lg">
                           <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-semibold text-sm">
+                            <div className="w-8 h-8 bg-success/20 rounded-full flex items-center justify-center text-success font-semibold text-sm">
                               {index + 1}
                             </div>
                             <div>
                               <h4 className="font-medium">{stock.symbol}</h4>
-                              <p className="text-sm text-gray-600">{formatCurrency(stock.price, 'KES')}</p>
+                              <p className="text-sm text-muted-foreground">{formatCurrency(stock.price, 'KES')}</p>
                             </div>
                           </div>
                           <div className="text-right">
                             <div className="flex items-center space-x-1">
-                              <TrendingUp className="w-3 h-3 text-green-600" />
-                              <span className="text-sm font-medium text-green-600">
+                              <TrendingUp className="w-3 h-3 text-success" />
+                              <span className="text-sm font-medium text-success">
                                 +{formatPercentage(stock.changePercent)}
                               </span>
                             </div>
                             {stock.volume && (
-                              <p className="text-xs text-gray-500">Vol: {stock.volume.toLocaleString()}</p>
+                              <p className="text-xs text-muted-foreground">Vol: {stock.volume.toLocaleString()}</p>
                             )}
                           </div>
                         </div>
@@ -462,7 +462,7 @@ const Dashboard = () => {
                 {/* Top Losers */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-red-600">
+                    <CardTitle className="flex items-center gap-2 text-destructive">
                       <TrendingDown className="h-5 w-5" />
                       Top Losers
                     </CardTitle>
@@ -471,25 +471,25 @@ const Dashboard = () => {
                   <CardContent>
                     <div className="space-y-3">
                       {losers.slice(0, 8).map((stock: any, index: number) => (
-                        <div key={stock.symbol} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                        <div key={stock.symbol} className="flex items-center justify-between p-3 bg-destructive/10 rounded-lg">
                           <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-semibold text-sm">
+                            <div className="w-8 h-8 bg-destructive/20 rounded-full flex items-center justify-center text-destructive font-semibold text-sm">
                               {index + 1}
                             </div>
                             <div>
                               <h4 className="font-medium">{stock.symbol}</h4>
-                              <p className="text-sm text-gray-600">{formatCurrency(stock.price, 'KES')}</p>
+                              <p className="text-sm text-muted-foreground">{formatCurrency(stock.price, 'KES')}</p>
                             </div>
                           </div>
                           <div className="text-right">
                             <div className="flex items-center space-x-1">
-                              <TrendingDown className="w-3 h-3 text-red-600" />
-                              <span className="text-sm font-medium text-red-600">
+                              <TrendingDown className="w-3 h-3 text-destructive" />
+                              <span className="text-sm font-medium text-destructive">
                                 {formatPercentage(stock.changePercent)}
                               </span>
                             </div>
                             {stock.volume && (
-                              <p className="text-xs text-gray-500">Vol: {stock.volume.toLocaleString()}</p>
+                              <p className="text-xs text-muted-foreground">Vol: {stock.volume.toLocaleString()}</p>
                             )}
                           </div>
                         </div>
@@ -524,30 +524,30 @@ const Dashboard = () => {
                   {marketData.length > 0 ? (
                     <div className="space-y-2 max-h-96 overflow-y-auto">
                       {marketData.map((stock: any) => (
-                        <div key={stock.symbol} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                        <div key={stock.symbol} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50">
                           <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                              <span className="text-blue-600 font-semibold text-sm">{stock.symbol.substring(0, 2)}</span>
+                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                              <span className="text-primary font-semibold text-sm">{stock.symbol.substring(0, 2)}</span>
                             </div>
                             <div>
                               <h4 className="font-medium">{stock.symbol}</h4>
-                              <p className="text-sm text-gray-600">{stock.name}</p>
+                              <p className="text-sm text-muted-foreground">{stock.name}</p>
                             </div>
                           </div>
                           <div className="text-right">
                             <p className="font-medium">{formatCurrency(stock.price, 'KES')}</p>
                             <div className="flex items-center space-x-1">
                               {(stock.changePercent || 0) >= 0 ? (
-                                <TrendingUp className="w-3 h-3 text-green-600" />
+                                <TrendingUp className="w-3 h-3 text-success" />
                               ) : (
-                                <TrendingDown className="w-3 h-3 text-red-600" />
+                                <TrendingDown className="w-3 h-3 text-destructive" />
                               )}
-                              <span className={`text-sm ${(stock.changePercent || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              <span className={`text-sm ${(stock.changePercent || 0) >= 0 ? 'text-success' : 'text-destructive'}`}>
                                 {(stock.changePercent || 0) >= 0 ? '+' : ''}{formatPercentage(stock.changePercent || 0)}
                               </span>
                             </div>
                             {stock.volume && (
-                              <p className="text-xs text-gray-500">Vol: {stock.volume.toLocaleString()}</p>
+                              <p className="text-xs text-muted-foreground">Vol: {stock.volume.toLocaleString()}</p>
                             )}
                           </div>
                         </div>
@@ -557,14 +557,14 @@ const Dashboard = () => {
                     <div className="text-center py-8">
                       {marketLoading ? (
                         <>
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
-                          <p className="text-sm text-gray-500">Loading market data...</p>
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                          <p className="text-sm text-muted-foreground">Loading market data...</p>
                         </>
                       ) : (
                         <>
-                          <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                          <h3 className="text-lg font-medium text-gray-900 mb-2">No Market Data</h3>
-                          <p className="text-gray-500 mb-4">Unable to load NSE market data.</p>
+                          <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="text-lg font-medium text-foreground mb-2">No Market Data</h3>
+                          <p className="text-muted-foreground mb-4">Unable to load NSE market data.</p>
                           <Button onClick={refreshMarket}>Try Again</Button>
                         </>
                       )}
