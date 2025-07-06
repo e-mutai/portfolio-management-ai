@@ -1,36 +1,35 @@
-# Aiser - AI-Powered Investment Advisory Platform
+# Kenya Wealth AI - AI-Powered Investment Advisory Platform
 
-A comprehensive AI-powered investment advisory platform featuring real-time market data, international market analysis via YFinance, and intelligent portfolio management with advanced machine learning capabilities.
+A comprehensive AI-powered investment advisory platform featuring intelligent portfolio management with advanced machine learning capabilities, designed specifically for the Kenyan investment market.
 
 ## Features
 
 ### Core Features
-- **Authentication System**: Secure user registration and login with JWT tokens
-- **Real-time Market Data**: Live NSE (Nairobi Stock Exchange) market data via RapidAPI
-- **International Markets**: Global stock market data via YFinance API
+- **Authentication System**: Secure user registration and login with JWT tokens and Supabase
 - **Portfolio Management**: Track and manage investment portfolios
 - **Modern UI**: Beautiful, responsive interface built with React and Tailwind CSS
+- **Real-time Updates**: Live portfolio tracking and performance monitoring
 
 ### AI-Powered Features ✨
 
 #### 🧠 AI-Powered Risk Assessment Engine
 - **Portfolio Analysis**: Real-time diversification metrics and correlation analysis
-- **NSE Volatility Monitoring**: Kenya-specific market volatility tracking with VIX equivalent
-- **Predictive Risk Modeling**: TensorFlow.js neural network for risk probability prediction
-- **Localized Risk Scoring**: Kenya market-adjusted risk assessments with economic indicators
+- **Risk Monitoring**: Investment risk tracking and volatility analysis
+- **Predictive Risk Modeling**: Advanced neural network for risk probability prediction
+- **Localized Risk Scoring**: Kenya market-adjusted risk assessments
 - **Advanced Risk Metrics**: Sharpe ratio, maximum drawdown, Value at Risk (VaR), and Beta calculations
 
 #### 🎯 Intelligent Recommendation System
-- **NSE Investment Recommendations**: AI-driven stock picks based on technical and fundamental analysis
+- **Investment Recommendations**: AI-driven investment suggestions based on analysis
 - **Portfolio Optimization**: Mean-variance optimization with risk-return balance
 - **Natural Language Insights**: AI-generated market commentary and investment explanations
-- **Local Opportunity Identification**: Kenya-specific investment opportunities and sector analysis
+- **Opportunity Identification**: Kenya-specific investment opportunities and sector analysis
 - **Smart Rebalancing**: Automated portfolio rebalancing suggestions
 
 #### 📊 AI Dashboard Integration
 - **Real-time AI Insights Panel**: Comprehensive AI analysis in an intuitive tabbed interface
 - **Risk Alerts**: Proactive notifications for portfolio risk changes
-- **Market Sentiment Analysis**: AI-powered sentiment tracking for NSE stocks
+- **Market Sentiment Analysis**: AI-powered sentiment tracking
 - **Performance Predictions**: Machine learning-based portfolio performance forecasting
 
 ## Tech Stack
@@ -60,18 +59,16 @@ A comprehensive AI-powered investment advisory platform featuring real-time mark
 - **CORS** for cross-origin requests
 - **Rate limiting** for API protection
 
-### APIs
-- **RapidAPI YFinance**: International stock market data
-- **RapidAPI NSE**: Nairobi Stock Exchange data
+### Database & Authentication
+- **Supabase** for authentication and user management
+- **MongoDB** for application data storage
 
 ## Setup Instructions
 
 ### Prerequisites
 - Node.js (v18 or higher)
 - MongoDB (local or cloud instance)
-- RapidAPI account with subscriptions to:
-  - YFinance API
-  - Nairobi Stock Exchange API
+- Supabase account for authentication
 
 ### Installation
 
@@ -106,28 +103,30 @@ A comprehensive AI-powered investment advisory platform featuring real-time mark
    MONGODB_URI=mongodb://localhost:27017/aiser
    JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
    JWT_EXPIRES_IN=7d
-   RAPIDAPI_KEY=your-rapidapi-key-here
-   YFINANCE_API_URL=https://yahoo-finance15.p.rapidapi.com
-   YFINANCE_API_HOST=yahoo-finance15.p.rapidapi.com
-   NSE_API_URL=https://nairobi-stock-exchange.p.rapidapi.com
-   NSE_API_HOST=nairobi-stock-exchange.p.rapidapi.com
    FRONTEND_URL=http://localhost:5173
    ```
 
    **Frontend (.env)**
    ```bash
    # In the root directory
-   echo "VITE_API_URL=http://localhost:5000/api" > .env
+   cp .env.example .env
+   ```
+   Edit the `.env` file with your Supabase configuration:
+   ```env
+   VITE_API_URL=http://localhost:5000/api
+   VITE_SUPABASE_URL=your_supabase_url_here
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
    ```
 
 4. **Database Setup**
    - Install MongoDB locally or use MongoDB Atlas
    - Update the `MONGODB_URI` in your backend `.env` file
 
-5. **RapidAPI Setup**
-   - Sign up at [RapidAPI](https://rapidapi.com/)
-   - Subscribe to the YFinance and NSE APIs
-   - Get your API key and update the `.env` file
+5. **Supabase Setup**
+   - Sign up at [Supabase](https://supabase.com/)
+   - Create a new project
+   - Get your project URL and anon key from the project settings
+   - Update the frontend `.env` file with your Supabase credentials
 
 ### Running the Application
 
@@ -161,14 +160,14 @@ The application will be available at:
 - `PUT /api/users/profile` - Update user profile
 
 ### Market Data
-- `GET /api/market/nse/stocks` - Get all NSE stocks
-- `GET /api/market/nse/stock/:symbol` - Get specific NSE stock
-- `GET /api/market/nse/market-data` - Get NSE market data
-- `GET /api/market/nse/top-gainers` - Get NSE top gainers
-- `GET /api/market/nse/top-losers` - Get NSE top losers
-- `GET /api/market/yfinance/quote/:symbol` - Get YFinance quote
-- `GET /api/market/yfinance/historical/:symbol` - Get historical data
-- `GET /api/market/yfinance/search` - Search symbols
+- `GET /api/market/nse/stocks` - Get all stocks (currently returns empty - no data source configured)
+- `GET /api/market/stock/:symbol` - Get specific stock data
+- `GET /api/market/summary` - Get market summary
+- `GET /api/market/gainers` - Get top gainers
+- `GET /api/market/losers` - Get top losers
+- `GET /api/market/active` - Get most active stocks
+- `GET /api/market/search` - Search stocks
+- `GET /api/market/sector/:sector` - Get stocks by sector
 
 ### Portfolio & AI
 - `GET /api/portfolio` - Get user portfolio
@@ -187,11 +186,9 @@ aiser/
 ├── backend/                 # Node.js/Express backend
 │   ├── src/
 │   │   ├── config/         # Database configuration
-│   │   ├── controllers/    # Route controllers
 │   │   ├── middleware/     # Express middleware
 │   │   ├── models/         # Mongoose models
 │   │   ├── routes/         # API routes
-│   │   ├── services/       # External API services
 │   │   ├── utils/          # Utility functions
 │   │   └── server.ts       # Main server file
 │   ├── .env.example        # Environment template
@@ -263,8 +260,8 @@ cd backend && npm install && cd ..
 # Install MongoDB locally or use MongoDB Atlas
 
 # 3. Configure environment variables
-# Edit backend/.env with your MongoDB URI and RapidAPI key
-# Edit .env with your API URL
+# Edit backend/.env with your MongoDB URI and JWT secret
+# Edit .env with your Supabase credentials and API URL
 
 # 4. Run the application
 npm run dev:full

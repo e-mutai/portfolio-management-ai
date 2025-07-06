@@ -134,8 +134,8 @@ const Auth = () => {
     setLoadingState('loading');
     try {
       const { error } = await signUp(email, password, {
-        first_name: firstName,
-        last_name: lastName,
+        firstName: firstName,
+        lastName: lastName,
       });
       if (error) {
         setFormErrors({ general: error.message || 'Sign up failed' });

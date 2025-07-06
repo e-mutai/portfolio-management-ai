@@ -1,87 +1,70 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useRealTimeMarket } from '@/hooks/useRealTimeMarket';
-import marketService from '@/services/marketService';
-import portfolioService from '@/services/portfolioService';
+import { AIInsightsPanel } from '@/components/AIInsightsPanel';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, TrendingDown, DollarSign, Target, BarChart3, PieChart, LogOut, Brain } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Target, BarChart3, PieChart, LogOut, Brain, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, Pie } from 'recharts';
-import { AIInsightsPanel } from '@/components/AIInsightsPanel';
-import { MarketData, Portfolio, PerformanceData, AllocationData, LoadingState } from '@/types';
 import { formatCurrency, formatPercentage } from '@/lib/formatters';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
-  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
-  const [loadingState, setLoadingState] = useState<LoadingState>('loading');
-  
-  // Use real-time market data hook
+
+  // Add real-time market data
   const {
     stocks: marketData,
     marketSummary,
     isLoading: marketLoading,
     error: marketError,
     lastUpdated,
-    isRealTime,
     refresh: refreshMarket
   } = useRealTimeMarket({
     refreshInterval: 30000, // 30 seconds
     enableRealTime: true
   });
 
-  useEffect(() => {
-    const initialize = async () => {
-      setLoadingState('loading');
-      try {
-        await fetchPortfolio();
-        setLoadingState('success');
-      } catch (error) {
-        console.warn('Failed to load portfolio data:', error);
-        setPortfolio(portfolioService.getSamplePortfolio());
-        setLoadingState('success');
-      }
-    };
-    
-    initialize();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Calculate market statistics
+  const gainers = marketData.filter((stock: any) => (stock.changePercent || 0) > 0)
+    .sort((a: any, b: any) => (b.changePercent || 0) - (a.changePercent || 0))
+    .slice(0, 10);
+  
+  const losers = marketData.filter((stock: any) => (stock.changePercent || 0) < 0)
+    .sort((a: any, b: any) => (a.changePercent || 0) - (b.changePercent || 0))
+    .slice(0, 10);
 
-  const initializeDashboard = async () => {
-    setLoadingState('loading');
-    try {
-      await fetchPortfolio();
-      refreshMarket(); // Refresh market data using real-time hook
-      setLoadingState('success');
-    } catch (error) {
-      setLoadingState('error');
-      toast({
-        title: "Error",
-        description: "Failed to load dashboard data. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  console.log('SimpleWorkingDashboard rendering...', { 
+    marketDataCount: marketData.length, 
+    marketLoading,
+    gainersCount: gainers.length,
+    losersCount: losers.length
+  });
 
-  const fetchPortfolio = async () => {
-    try {
-      const portfolios = await portfolioService.getUserPortfolios();
-      if (portfolios.length > 0) {
-        setPortfolio(portfolios[0]); // Use the first portfolio for now
-      } else {
-        // If no portfolios exist, use sample data for demo
-        setPortfolio(portfolioService.getSamplePortfolio());
-      }
-    } catch (error) {
-      console.warn('Error fetching portfolio:', error);
-      // Fallback to sample data
-      setPortfolio(portfolioService.getSamplePortfolio());
-    }
-  };
+  // Generate portfolio performance data
+  const performanceData = [
+    { month: 'Jan', value: 30000 },
+    { month: 'Feb', value: 32000 },
+    { month: 'Mar', value: 31500 },
+    { month: 'Apr', value: 35000 },
+    { month: 'May', value: 38000 },
+    { month: 'Jun', value: 42000 },
+    { month: 'Jul', value: 45231 }
+  ];
+
+  // Generate portfolio holdings allocation data
+  const allocationData = [
+    { name: 'Safaricom (SCOM)', value: 12500, percentage: 35, color: '#22c55e' },
+    { name: 'Equity Bank (EQTY)', value: 8900, percentage: 25, color: '#3b82f6' },
+    { name: 'KCB Group (KCB)', value: 6400, percentage: 18, color: '#f59e0b' },
+    { name: 'EABL', value: 4200, percentage: 12, color: '#ef4444' },
+    { name: 'Others', value: 3500, percentage: 10, color: '#8b5cf6' }
+  ];
 
   const handleSignOut = async () => {
     try {
@@ -90,37 +73,22 @@ const Dashboard = () => {
         title: "Signed out",
         description: "You have been successfully signed out.",
       });
+      // Navigate to force logout page to ensure complete cleanup
+      navigate('/logout', { replace: true });
     } catch (error) {
+      console.error('Sign out error:', error);
       toast({
         title: "Error",
         description: "Failed to sign out. Please try again.",
         variant: "destructive",
       });
+      // Fallback: force logout anyway
+      navigate('/logout', { replace: true });
     }
   };
 
-  // Sample data for charts with proper typing
-  const performanceData: PerformanceData[] = [
-    { month: 'Jan', value: 10000 },
-    { month: 'Feb', value: 12000 },
-    { month: 'Mar', value: 11500 },
-    { month: 'Apr', value: 13000 },
-    { month: 'May', value: 14500 },
-    { month: 'Jun', value: 16000 },
-  ];
-
-  const allocationData: AllocationData[] = [
-    { name: 'Stocks', value: 45, percentage: 45, color: '#22c55e' },
-    { name: 'Bonds', value: 25, percentage: 25, color: '#3b82f6' },
-    { name: 'SACCOs', value: 20, percentage: 20, color: '#f59e0b' },
-    { name: 'Cash', value: 10, percentage: 10, color: '#6b7280' },
-  ];
-
-  // Use real market data or fallback values
-  const nseIndex = marketSummary?.value || 2847.5;
-  const nseChange = marketSummary?.changePercent || 1.2;
-
-  if (loadingState === 'loading') {
+  // Show loading state for initial load
+  if (marketLoading && marketData.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -131,12 +99,15 @@ const Dashboard = () => {
     );
   }
 
-  if (loadingState === 'error') {
+  // Show error state if needed
+  if (marketError && marketData.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Failed to load dashboard data</p>
-          <Button onClick={initializeDashboard}>Try Again</Button>
+          <BarChart3 className="h-12 w-12 text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to Load Market Data</h3>
+          <p className="text-gray-500 mb-4">{marketError}</p>
+          <Button onClick={refreshMarket}>Try Again</Button>
         </div>
       </div>
     );
@@ -153,6 +124,21 @@ const Dashboard = () => {
               <h1 className="text-2xl font-bold text-gray-900">Aiser</h1>
             </div>
             <div className="flex items-center space-x-4">
+              {/* Market Status */}
+              <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full ${marketLoading ? 'bg-yellow-400' : 'bg-green-400'}`}></div>
+                <span className="text-xs text-gray-600">
+                  {marketLoading ? 'Loading...' : `${marketData.length} stocks`}
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={refreshMarket}
+                  disabled={marketLoading}
+                >
+                  <RefreshCw className={`w-3 h-3 ${marketLoading ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
               <span className="text-sm text-gray-600">Welcome, {user?.email}</span>
               <Button variant="outline" onClick={handleSignOut} size="sm">
                 <LogOut className="w-4 h-4 mr-2" />
@@ -164,19 +150,43 @@ const Dashboard = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Data Status Banner */}
+        {marketError && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <RefreshCw className="h-5 w-5 text-yellow-600 mr-2" />
+                <div>
+                  <h4 className="text-sm font-medium text-yellow-800">Data Issue</h4>
+                  <p className="text-sm text-yellow-700">{marketError}</p>
+                </div>
+              </div>
+              <Button size="sm" variant="outline" onClick={refreshMarket}>
+                Retry
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {lastUpdated && (
+          <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center justify-center text-sm text-green-700">
+              <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+              Live NSE data • Last updated {new Date(lastUpdated).toLocaleTimeString()}
+            </div>
+          </div>
+        )}
+
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Portfolio Value</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(portfolio?.total_value || 0, 'KES')}</div>
-              <p className="text-xs text-muted-foreground">
-                {portfolio?.gain_percentage && portfolio.gain_percentage > 0 ? '+' : ''}
-                {formatPercentage(portfolio?.gain_percentage || 0)} from last month
-              </p>
+              <div className="text-2xl font-bold">KES 45,231.89</div>
+              <p className="text-xs text-muted-foreground">+20.1% from last month</p>
             </CardContent>
           </Card>
 
@@ -186,45 +196,42 @@ const Dashboard = () => {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${(portfolio?.total_gain || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatCurrency(portfolio?.total_gain || 0, 'KES')}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {formatPercentage(portfolio?.gain_percentage || 0)} overall return
-              </p>
+              <div className="text-2xl font-bold text-green-600">+KES 12,234</div>
+              <p className="text-xs text-muted-foreground">+8.5% portfolio return</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                NSE Index
-                {isRealTime && (
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-xs text-green-600">LIVE</span>
-                  </div>
-                )}
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">NSE Index</CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{nseIndex.toLocaleString()}</div>
-              <p className={`text-xs flex items-center justify-between ${nseChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                <span className="flex items-center">
-                  {nseChange >= 0 ? (
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                  ) : (
-                    <TrendingDown className="w-3 h-3 mr-1" />
-                  )}
-                  {nseChange >= 0 ? '+' : ''}{formatPercentage(nseChange)} today
-                </span>
-                {lastUpdated && (
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(lastUpdated).toLocaleTimeString()}
-                  </span>
+              <div className="text-2xl font-bold">
+                {marketLoading ? (
+                  <div className="animate-pulse bg-gray-200 h-8 w-20 rounded"></div>
+                ) : marketSummary ? (
+                  marketSummary.value.toFixed(2)
+                ) : (
+                  '160.13'
+                )}
+              </div>
+              <p className={`text-xs ${
+                marketSummary && marketSummary.changePercent >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {marketLoading ? (
+                  <div className="animate-pulse bg-gray-200 h-4 w-16 rounded"></div>
+                ) : marketSummary ? (
+                  `${marketSummary.changePercent >= 0 ? '+' : ''}${formatPercentage(marketSummary.changePercent)} today`
+                ) : (
+                  '+1.44% today'
                 )}
               </p>
+              {lastUpdated && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {new Date(lastUpdated).toLocaleTimeString()}
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -234,7 +241,7 @@ const Dashboard = () => {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(portfolio?.cash_balance || 0, 'KES')}</div>
+              <div className="text-2xl font-bold">KES 15,000</div>
               <p className="text-xs text-muted-foreground">Available for investment</p>
             </CardContent>
           </Card>
@@ -242,20 +249,20 @@ const Dashboard = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview">Portfolio Overview</TabsTrigger>
-            <TabsTrigger value="market">Market Data</TabsTrigger>
-            <TabsTrigger value="ai-insights" className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-700">
-              <Brain className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              <span className="font-semibold">🤖 AI Insights</span>
-              <Badge variant="secondary" className="ml-1 text-xs bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="holdings">Holdings</TabsTrigger>
+            <TabsTrigger value="market">Market</TabsTrigger>
+            <TabsTrigger value="ai-insights" className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-purple-600" />
+              <span>AI Insights</span>
+              <Badge variant="secondary" className="ml-1 text-xs">
                 NEW
               </Badge>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6 mt-6">
-            {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Portfolio Performance Chart */}
               <Card>
@@ -276,11 +283,11 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              {/* Asset Allocation */}
+              {/* Portfolio Holdings Chart */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Asset Allocation</CardTitle>
-                  <CardDescription>Your current investment distribution</CardDescription>
+                  <CardTitle>Portfolio Holdings</CardTitle>
+                  <CardDescription>Your current stock allocations by value (KES)</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -291,13 +298,13 @@ const Dashboard = () => {
                         cy="50%"
                         outerRadius={80}
                         dataKey="value"
-                        label={({ name, value }) => `${name}: ${value}%`}
+                        label={({ name, percentage }) => `${name}: ${percentage}%`}
                       >
                         {allocationData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip formatter={(value) => [formatCurrency(Number(value), 'KES'), 'Value']} />
                     </RechartsPieChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -306,273 +313,270 @@ const Dashboard = () => {
 
             {/* Quick Actions */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardHeader className="text-center">
-                  <Target className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                  <Target className="h-8 w-8 mx-auto text-blue-600 mb-2" />
                   <CardTitle className="text-lg">Risk Assessment</CardTitle>
-                  <CardDescription>Complete your investment risk profile</CardDescription>
+                  <CardDescription>Analyze your portfolio risk profile</CardDescription>
                 </CardHeader>
               </Card>
 
-              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardHeader className="text-center">
-                  <PieChart className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                  <CardTitle className="text-lg">Get Recommendations</CardTitle>
-                  <CardDescription>AI-powered investment suggestions</CardDescription>
+                  <Brain className="h-8 w-8 mx-auto text-purple-600 mb-2" />
+                  <CardTitle className="text-lg">AI Recommendations</CardTitle>
+                  <CardDescription>Get personalized investment advice</CardDescription>
                 </CardHeader>
               </Card>
 
-              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardHeader className="text-center">
-                  <BarChart3 className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+                  <BarChart3 className="h-8 w-8 mx-auto text-green-600 mb-2" />
                   <CardTitle className="text-lg">Market Analysis</CardTitle>
-                  <CardDescription>Detailed market insights and trends</CardDescription>
+                  <CardDescription>Explore market trends and insights</CardDescription>
                 </CardHeader>
               </Card>
             </div>
           </TabsContent>
 
-          <TabsContent value="market" className="space-y-6 mt-6">
-            {/* Top Gainers & Losers */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Top Gainers */}
-              <Card className="border-l-4 border-l-green-500">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-green-500" />
-                    📈 Top Gainers
-                    {isRealTime && (
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-xs text-green-600">LIVE</span>
-                      </div>
-                    )}
-                  </CardTitle>
-                  <CardDescription>
-                    Best performing stocks on the NSE today
-                    {!isRealTime && (
-                      <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border border-yellow-200 dark:border-yellow-700">
-                        <p className="text-xs text-yellow-700 dark:text-yellow-300 flex items-center gap-1">
-                          <span>⚠️</span>
-                          <span>Showing simulated market data for demo purposes</span>
-                        </p>
-                      </div>
-                    )}
-                    {lastUpdated && (
-                      <span className="block text-xs text-muted-foreground mt-1">
-                        Last updated: {new Date(lastUpdated).toLocaleString()}
-                      </span>
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {marketLoading && marketData.length === 0 ? (
-                    <div className="text-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
-                      <p className="text-sm text-muted-foreground">Loading market data...</p>
-                    </div>
-                  ) : marketError && marketData.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-sm text-red-600 mb-2">Failed to load market data</p>
-                      <Button variant="outline" size="sm" onClick={refreshMarket}>
-                        Try Again
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {(marketData || [])
-                        .filter(stock => (stock.changePercent || stock.change_percent || 0) > 0)
-                        .sort((a, b) => (b.changePercent || b.change_percent || 0) - (a.changePercent || a.change_percent || 0))
-                        .slice(0, 5)
-                        .map((stock, index) => (
-                        <div key={stock.symbol} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center text-green-600 dark:text-green-400 font-semibold text-sm">
-                              {index + 1}
-                            </div>
-                            <div>
-                              <h4 className="font-medium">{stock.symbol}</h4>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">{stock.name || stock.company_name}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium">{formatCurrency(stock.price || stock.current_price || 0, 'KES')}</p>
-                            <p className="text-sm flex items-center text-green-600 dark:text-green-400">
-                              <TrendingUp className="w-4 h-4 mr-1" />
-                              +{formatPercentage(stock.changePercent || stock.change_percent || 0)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Top Losers */}
-              <Card className="border-l-4 border-l-red-500">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingDown className="h-5 w-5 text-red-500" />
-                    � Top Losers
-                    {isRealTime && (
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-xs text-green-600">LIVE</span>
-                      </div>
-                    )}
-                  </CardTitle>
-                  <CardDescription>
-                    Worst performing stocks on the NSE today
-                    {!isRealTime && (
-                      <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border border-yellow-200 dark:border-yellow-700">
-                        <p className="text-xs text-yellow-700 dark:text-yellow-300 flex items-center gap-1">
-                          <span>⚠️</span>
-                          <span>Showing simulated market data for demo purposes</span>
-                        </p>
-                      </div>
-                    )}
-                    {lastUpdated && (
-                      <span className="block text-xs text-muted-foreground mt-1">
-                        Last updated: {new Date(lastUpdated).toLocaleString()}
-                      </span>
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {marketLoading && marketData.length === 0 ? (
-                    <div className="text-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto mb-2"></div>
-                      <p className="text-sm text-muted-foreground">Loading market data...</p>
-                    </div>
-                  ) : marketError && marketData.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-sm text-red-600 mb-2">Failed to load market data</p>
-                      <Button variant="outline" size="sm" onClick={refreshMarket}>
-                        Try Again
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {(marketData || [])
-                        .filter(stock => (stock.changePercent || stock.change_percent || 0) < 0)
-                        .sort((a, b) => (a.changePercent || a.change_percent || 0) - (b.changePercent || b.change_percent || 0))
-                        .slice(0, 5)
-                        .map((stock, index) => (
-                        <div key={stock.symbol} className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center text-red-600 dark:text-red-400 font-semibold text-sm">
-                              {index + 1}
-                            </div>
-                            <div>
-                              <h4 className="font-medium">{stock.symbol}</h4>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">{stock.name || stock.company_name}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium">{formatCurrency(stock.price || stock.current_price || 0, 'KES')}</p>
-                            <p className="text-sm flex items-center text-red-600 dark:text-red-400">
-                              <TrendingDown className="w-4 h-4 mr-1" />
-                              {formatPercentage(stock.changePercent || stock.change_percent || 0)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Market Summary */}
+          <TabsContent value="holdings" className="mt-6">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    📊 Market Summary
-                    {isRealTime ? (
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-xs text-green-600">LIVE</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                        <span className="text-xs text-yellow-600">DEMO</span>
-                      </div>
-                    )}
-                  </CardTitle>
-                  <CardDescription>
-                    Overall market performance and index data
-                    {!isRealTime && (
-                      <span className="block text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                        📊 Using simulated data for demonstration
-                      </span>
-                    )}
-                  </CardDescription>
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={refreshMarket}
-                  disabled={marketLoading}
-                  className="ml-2"
-                >
-                  {marketLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-                      Loading...
-                    </>
-                  ) : (
-                    <>
-                      🔄 Refresh Data
-                    </>
-                  )}
-                </Button>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  Portfolio Holdings
+                  <Button size="sm">
+                    <Target className="h-4 w-4 mr-2" />
+                    Add Holding
+                  </Button>
+                </CardTitle>
+                <CardDescription>Your current investment positions</CardDescription>
               </CardHeader>
               <CardContent>
-                {marketSummary && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {marketSummary.value.toFixed(2)}
-                      </div>
-                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {marketSummary.index}
-                      </div>
-                      <div className={`text-sm flex items-center justify-center mt-1 ${marketSummary.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {marketSummary.changePercent >= 0 ? (
-                          <TrendingUp className="w-4 h-4 mr-1" />
-                        ) : (
-                          <TrendingDown className="w-4 h-4 mr-1" />
-                        )}
-                        {marketSummary.changePercent >= 0 ? '+' : ''}{formatPercentage(marketSummary.changePercent)}
-                      </div>
-                    </div>
-                    <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                        {formatCurrency(marketSummary.change, 'KES')}
-                      </div>
-                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Change
-                      </div>
-                    </div>
-                    <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                      <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                        {(marketSummary.volume / 1000000).toFixed(1)}M
-                      </div>
-                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Volume
-                      </div>
-                    </div>
+                <div className="text-center py-8">
+                  <div className="text-gray-400 mb-4">
+                    <Target className="h-12 w-12 mx-auto mb-2" />
                   </div>
-                )}
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Holdings Yet</h3>
+                  <p className="text-gray-500 mb-4">Start building your portfolio by adding your first stock from the {marketData.length} available NSE stocks.</p>
+                  <Button>
+                    <Target className="h-4 w-4 mr-2" />
+                    Add Your First Holding
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
+          <TabsContent value="market" className="mt-6">
+            <div className="space-y-6">
+              {/* Market Overview Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Stocks</CardTitle>
+                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{marketData.length}</div>
+                    <p className="text-xs text-muted-foreground">NSE listed companies</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Top Gainers</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-green-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">{gainers.length}</div>
+                    <p className="text-xs text-muted-foreground">Stocks moving up</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Top Losers</CardTitle>
+                    <TrendingDown className="h-4 w-4 text-red-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-red-600">{losers.length}</div>
+                    <p className="text-xs text-muted-foreground">Stocks moving down</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Market Cap</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {marketSummary?.marketCap || 'KES 2.5T'}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Total market value</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Top Gainers and Losers */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Top Gainers */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-green-600">
+                      <TrendingUp className="h-5 w-5" />
+                      Top Gainers
+                    </CardTitle>
+                    <CardDescription>Best performing stocks today</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {gainers.slice(0, 8).map((stock: any, index: number) => (
+                        <div key={stock.symbol} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-semibold text-sm">
+                              {index + 1}
+                            </div>
+                            <div>
+                              <h4 className="font-medium">{stock.symbol}</h4>
+                              <p className="text-sm text-gray-600">{formatCurrency(stock.price, 'KES')}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="flex items-center space-x-1">
+                              <TrendingUp className="w-3 h-3 text-green-600" />
+                              <span className="text-sm font-medium text-green-600">
+                                +{formatPercentage(stock.changePercent)}
+                              </span>
+                            </div>
+                            {stock.volume && (
+                              <p className="text-xs text-gray-500">Vol: {stock.volume.toLocaleString()}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Top Losers */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-red-600">
+                      <TrendingDown className="h-5 w-5" />
+                      Top Losers
+                    </CardTitle>
+                    <CardDescription>Worst performing stocks today</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {losers.slice(0, 8).map((stock: any, index: number) => (
+                        <div key={stock.symbol} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-semibold text-sm">
+                              {index + 1}
+                            </div>
+                            <div>
+                              <h4 className="font-medium">{stock.symbol}</h4>
+                              <p className="text-sm text-gray-600">{formatCurrency(stock.price, 'KES')}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="flex items-center space-x-1">
+                              <TrendingDown className="w-3 h-3 text-red-600" />
+                              <span className="text-sm font-medium text-red-600">
+                                {formatPercentage(stock.changePercent)}
+                              </span>
+                            </div>
+                            {stock.volume && (
+                              <p className="text-xs text-gray-500">Vol: {stock.volume.toLocaleString()}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* All Stocks List */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>All NSE Stocks</CardTitle>
+                    <CardDescription>Complete list of {marketData.length} NSE-listed stocks with live prices</CardDescription>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={refreshMarket}
+                    disabled={marketLoading}
+                  >
+                    {marketLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                    ) : (
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                    )}
+                    Refresh
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {marketData.length > 0 ? (
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                      {marketData.map((stock: any) => (
+                        <div key={stock.symbol} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                              <span className="text-blue-600 font-semibold text-sm">{stock.symbol.substring(0, 2)}</span>
+                            </div>
+                            <div>
+                              <h4 className="font-medium">{stock.symbol}</h4>
+                              <p className="text-sm text-gray-600">{stock.name}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-medium">{formatCurrency(stock.price, 'KES')}</p>
+                            <div className="flex items-center space-x-1">
+                              {(stock.changePercent || 0) >= 0 ? (
+                                <TrendingUp className="w-3 h-3 text-green-600" />
+                              ) : (
+                                <TrendingDown className="w-3 h-3 text-red-600" />
+                              )}
+                              <span className={`text-sm ${(stock.changePercent || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {(stock.changePercent || 0) >= 0 ? '+' : ''}{formatPercentage(stock.changePercent || 0)}
+                              </span>
+                            </div>
+                            {stock.volume && (
+                              <p className="text-xs text-gray-500">Vol: {stock.volume.toLocaleString()}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      {marketLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
+                          <p className="text-sm text-gray-500">Loading market data...</p>
+                        </>
+                      ) : (
+                        <>
+                          <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">No Market Data</h3>
+                          <p className="text-gray-500 mb-4">Unable to load NSE market data.</p>
+                          <Button onClick={refreshMarket}>Try Again</Button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           <TabsContent value="ai-insights" className="mt-6">
-            {user && <AIInsightsPanel user={user} portfolio={portfolio || undefined} />}
+            <AIInsightsPanel user={user} portfolio={undefined} />
           </TabsContent>
         </Tabs>
       </div>

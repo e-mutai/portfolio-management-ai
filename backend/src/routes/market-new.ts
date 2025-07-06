@@ -1,5 +1,4 @@
 import express from 'express';
-import nseWebScraper from '../services/nseWebScraper.js';
 
 const router = express.Router();
 
@@ -20,22 +19,18 @@ interface StockData {
 // @access  Public
 router.get('/nse/stocks', async (req, res) => {
   try {
-    console.log('🔄 Fetching live NSE stock data...');
-    const nseData = await nseWebScraper.scrapeNSEData();
-    
+    // Return empty array since external APIs are removed
+    // Backend should implement real data source here
     res.json({
       success: true,
-      data: nseData.stocks,
-      timestamp: new Date().toISOString(),
-      source: 'NSE Web Scraper',
-      count: nseData.stocks.length
+      data: [],
+      message: 'No external API data sources configured. Please implement a real data source.'
     });
   } catch (error) {
     console.error('Error fetching NSE stocks:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch NSE stocks',
-      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -46,29 +41,17 @@ router.get('/nse/stocks', async (req, res) => {
 router.get('/stock/:symbol', async (req, res) => {
   try {
     const { symbol } = req.params;
-    console.log(`🔍 Fetching data for stock: ${symbol}`);
     
-    const stock = await nseWebScraper.getStockDetails(symbol.toUpperCase());
-    
-    if (!stock) {
-      return res.status(404).json({
-        success: false,
-        error: `Stock ${symbol} not found`,
-      });
-    }
-
-    res.json({
-      success: true,
-      data: stock,
-      timestamp: new Date().toISOString(),
-      source: 'NSE Web Scraper'
+    // Return empty since external APIs are removed
+    res.status(404).json({
+      success: false,
+      error: `Stock ${symbol} not found. No data source configured.`,
     });
   } catch (error) {
     console.error('Error fetching stock:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch stock data',
-      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -101,24 +84,17 @@ router.get('/stock/:symbol/history', async (req, res) => {
 // @access  Public
 router.get('/summary', async (req, res) => {
   try {
-    console.log('📊 Fetching NSE market summary...');
-    const nseData = await nseWebScraper.scrapeNSEData();
-    
+    // Return empty since external APIs are removed
     res.json({
       success: true,
-      data: {
-        ...nseData.marketSummary,
-        tradingSummary: nseData.tradingSummary
-      },
-      timestamp: new Date().toISOString(),
-      source: 'NSE Web Scraper'
+      data: null,
+      message: 'No market summary available. No data source configured.'
     });
   } catch (error) {
     console.error('Error fetching market summary:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch market summary',
-      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -128,22 +104,17 @@ router.get('/summary', async (req, res) => {
 // @access  Public
 router.get('/gainers', async (req, res) => {
   try {
-    console.log('📈 Fetching top gainers...');
-    const nseData = await nseWebScraper.scrapeNSEData();
-    
+    // Return empty since external APIs are removed
     res.json({
       success: true,
-      data: nseData.topGainers,
-      timestamp: new Date().toISOString(),
-      source: 'NSE Web Scraper',
-      count: nseData.topGainers.length
+      data: [],
+      message: 'No gainers data available. No data source configured.'
     });
   } catch (error) {
     console.error('Error fetching top gainers:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch top gainers',
-      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -153,22 +124,17 @@ router.get('/gainers', async (req, res) => {
 // @access  Public
 router.get('/losers', async (req, res) => {
   try {
-    console.log('📉 Fetching top losers...');
-    const nseData = await nseWebScraper.scrapeNSEData();
-    
+    // Return empty since external APIs are removed
     res.json({
       success: true,
-      data: nseData.topLosers,
-      timestamp: new Date().toISOString(),
-      source: 'NSE Web Scraper',
-      count: nseData.topLosers.length
+      data: [],
+      message: 'No losers data available. No data source configured.'
     });
   } catch (error) {
     console.error('Error fetching top losers:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch top losers',
-      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -178,22 +144,17 @@ router.get('/losers', async (req, res) => {
 // @access  Public
 router.get('/active', async (req, res) => {
   try {
-    console.log('🔥 Fetching most active stocks...');
-    const nseData = await nseWebScraper.scrapeNSEData();
-    
+    // Return empty since external APIs are removed
     res.json({
       success: true,
-      data: nseData.mostActive,
-      timestamp: new Date().toISOString(),
-      source: 'NSE Web Scraper',
-      count: nseData.mostActive.length
+      data: [],
+      message: 'No active stocks data available. No data source configured.'
     });
   } catch (error) {
     console.error('Error fetching most active stocks:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch most active stocks',
-      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -212,24 +173,17 @@ router.get('/search', async (req, res) => {
       });
     }
 
-    console.log(`🔍 Searching stocks for: ${query}`);
-    const nseData = await nseWebScraper.scrapeNSEData();
-    const searchResults = nseWebScraper.searchStocks(nseData.stocks, query as string);
-    
+    // Return empty since external APIs are removed
     res.json({
       success: true,
-      data: searchResults,
-      query: query,
-      timestamp: new Date().toISOString(),
-      source: 'NSE Web Scraper',
-      count: searchResults.length
+      data: [],
+      message: `No search results for "${query}". No data source configured.`
     });
   } catch (error) {
     console.error('Error searching stocks:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to search stocks',
-      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });

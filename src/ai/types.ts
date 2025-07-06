@@ -9,6 +9,16 @@ export interface AIRiskMetrics extends RiskMetrics {
   riskAdjustedReturn: number;
   correlationMatrix?: number[][];
   timestamp: string;
+  
+  // Advanced risk metrics
+  maxDrawdown?: number;
+  sharpeRatio?: number;
+  sectorConcentration?: number;
+  currencyRisk?: number;
+  liquidityRisk?: number;
+  inflationRisk?: number;
+  politicalRisk?: number;
+  economicRisk?: number;
 }
 
 export interface AIRecommendation {

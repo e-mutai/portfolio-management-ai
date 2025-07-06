@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./components/Dashboard";
+import ForceLogout from "./components/ForceLogout";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,12 +66,16 @@ const App = () => (
               } 
             />
             <Route 
+              path="/logout" 
+              element={<ForceLogout />}
+            />
+            <Route 
               path="/dashboard" 
               element={
                 <ProtectedRoute>
                   <Dashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
             <Route path="*" element={<NotFound />} />
           </Routes>

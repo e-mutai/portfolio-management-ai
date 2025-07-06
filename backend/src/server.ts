@@ -11,6 +11,7 @@ import userRoutes from './routes/users.js';
 import marketRoutes from './routes/market.js';
 import portfolioRoutes from './routes/portfolio.js';
 import aiRoutes from './routes/ai.js';
+import debugRoutes from './routes/debug.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
 
@@ -34,7 +35,9 @@ app.use(cors({
     'http://localhost:8080',
     'http://localhost:8081',
     'http://localhost:8082',
-    'http://localhost:8083'
+    'http://localhost:8083',
+    'http://localhost:8084',
+    'http://localhost:8085'
   ],
   credentials: true,
 }));
@@ -78,6 +81,11 @@ app.use('/api/users', userRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/ai', aiRoutes);
+
+// Debug routes (development only)
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api/debug', debugRoutes);
+}
 
 // Catch-all for unmatched routes
 app.use('*', (req, res) => {

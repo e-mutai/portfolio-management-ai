@@ -17,27 +17,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing user on mount
-    // For demo purposes, create a mock user if none exists
+    // Check for existing authenticated user on mount
     const currentUser = authService.getCurrentUser();
     if (currentUser && authService.isAuthenticated()) {
       setUser(currentUser);
-    } else {
-      // Create a demo user for testing without backend
-      const demoUser: User = {
-        id: 'demo-user-1',
-        firstName: 'Demo',
-        lastName: 'User',
-        email: 'demo@aiser.ai',
-        isEmailVerified: true,
-        investmentExperience: 'intermediate' as const,
-        riskTolerance: 'moderate' as const,
-        investmentGoals: ['growth', 'retirement'],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setUser(demoUser);
     }
+    // No demo user creation - require real authentication
     setLoading(false);
   }, []);
 
@@ -75,8 +60,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
-    authService.logout();
-    setUser(null);
+    try {
+      authService.logout();
+      setUser(null);
+    } catch (error) {
+      console.error('Sign out error:', error);
+      // Even if there's an error, clear the local state
+      authService.logout();
+      setUser(null);
+    }
   };
 
   return (

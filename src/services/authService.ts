@@ -1,4 +1,6 @@
-import api from './api';
+import axios from 'axios';
+
+const API_BASE_URL = 'http://localhost:5000/api';
 
 export interface User {
   id: string;
@@ -39,7 +41,7 @@ export interface RegisterData {
 
 class AuthService {
   async login(data: LoginData): Promise<AuthResponse> {
-    const response = await api.post('/auth/login', data);
+    const response = await axios.post(`${API_BASE_URL}/auth/login`, data);
     
     if (response.data.success) {
       localStorage.setItem('auth_token', response.data.data.token);
@@ -50,7 +52,7 @@ class AuthService {
   }
 
   async register(data: RegisterData): Promise<AuthResponse> {
-    const response = await api.post('/auth/register', data);
+    const response = await axios.post(`${API_BASE_URL}/auth/register`, data);
     
     if (response.data.success) {
       localStorage.setItem('auth_token', response.data.data.token);
@@ -61,8 +63,22 @@ class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
+    try {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      // Clear any other auth-related data
+      localStorage.removeItem('refresh_token');
+      sessionStorage.clear(); // Clear session storage as well
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Force clear everything we can
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (clearError) {
+        console.error('Error clearing storage:', clearError);
+      }
+    }
   }
 
   getCurrentUser(): User | null {
@@ -79,12 +95,12 @@ class AuthService {
   }
 
   async getProfile(): Promise<{ success: boolean; data: { user: User } }> {
-    const response = await api.get('/users/profile');
+    const response = await axios.get(`${API_BASE_URL}/users/profile`);
     return response.data;
   }
 
   async updateProfile(data: Partial<User>): Promise<{ success: boolean; data: { user: User } }> {
-    const response = await api.put('/users/profile', data);
+    const response = await axios.put(`${API_BASE_URL}/users/profile`, data);
     
     if (response.data.success) {
       localStorage.setItem('user', JSON.stringify(response.data.data.user));

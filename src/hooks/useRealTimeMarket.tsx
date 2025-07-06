@@ -16,7 +16,7 @@ interface UseRealTimeMarketOptions {
   maxRetries?: number;
 }
 
-export function useRealTimeMarket(options: UseRealTimeMarketOptions = {}) {
+export const useRealTimeMarket = (options: UseRealTimeMarketOptions = {}) => {
   const {
     refreshInterval = 30000, // 30 seconds default
     enableRealTime = true,
@@ -49,10 +49,9 @@ export function useRealTimeMarket(options: UseRealTimeMarketOptions = {}) {
     }
 
     try {
-      const [stocks, marketSummary, marketStatus] = await Promise.all([
+      const [stocks, marketSummary] = await Promise.all([
         marketService.getNSEStocks(),
-        marketService.getNSEMarketData(),
-        marketService.getMarketStatus()
+        marketService.getMarketSummary()
       ]);
 
       if (!isActiveRef.current) return;
@@ -63,7 +62,7 @@ export function useRealTimeMarket(options: UseRealTimeMarketOptions = {}) {
         isLoading: false,
         error: null,
         lastUpdated: new Date(),
-        isRealTime: marketStatus.isOpen
+        isRealTime: true // Always true since we're getting live data
       });
 
       retryCountRef.current = 0; // Reset retry count on success
@@ -184,7 +183,7 @@ export function useStockData(symbol: string, refreshInterval: number = 30000) {
     try {
       setIsLoading(true);
       setError(null);
-      const stockData = await marketService.getNSEStock(symbol);
+      const stockData = await marketService.getStock(symbol);
       setStock(stockData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch stock data');

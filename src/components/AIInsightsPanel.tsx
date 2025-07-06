@@ -53,8 +53,8 @@ export function AIInsightsPanel({ user, portfolio }: AIInsightsPanelProps) {
     setMarketDataLoading(true);
     try {
       const [gainersData, losersData] = await Promise.all([
-        marketService.getNSETopGainers(),
-        marketService.getNSETopLosers()
+        marketService.getTopGainers(),
+        marketService.getTopLosers()
       ]);
       setTopGainers(gainersData.slice(0, 5)); // Top 5 gainers
       setTopLosers(losersData.slice(0, 5)); // Top 5 losers
@@ -70,18 +70,41 @@ export function AIInsightsPanel({ user, portfolio }: AIInsightsPanelProps) {
     if (portfolio && user) {
       Promise.all([
         analyzePortfolio(portfolio),
-        generateRecommendations(portfolio, user),
-        checkAlerts(portfolio, user),
+        generateRecommendations(user, portfolio),
+        checkAlerts(portfolio),
         getModelPerformance(),
         fetchMarketData()
       ]).catch(error => {
         console.error('Failed to initialize AI analysis:', error);
       });
     } else {
-      // Still fetch market data even without portfolio
-      fetchMarketData();
+      // Create demo data for AI demonstration when no portfolio exists
+      const demoPortfolio: Portfolio = {
+        id: 'demo',
+        user_id: user.id,
+        total_value: 500000,
+        total_investment: 480000,
+        total_gain: 20000,
+        gain_percentage: 4.17,
+        cash_balance: 50000,
+        holdings: [
+          { symbol: 'SCOM', shares: 100, avg_price: 45.0, current_value: 47000, gain_percentage: 4.4 },
+          { symbol: 'KCB', shares: 50, avg_price: 55.0, current_value: 28500, gain_percentage: 3.6 },
+          { symbol: 'EQTY', shares: 200, avg_price: 35.0, current_value: 72000, gain_percentage: 2.9 }
+        ]
+      };
+      
+      Promise.all([
+        analyzePortfolio(demoPortfolio),
+        generateRecommendations(user, demoPortfolio),
+        checkAlerts(demoPortfolio),
+        getModelPerformance(),
+        fetchMarketData()
+      ]).catch(error => {
+        console.error('Failed to initialize AI demo analysis:', error);
+      });
     }
-  }, [portfolio, user]);
+  }, [portfolio, user, analyzePortfolio, generateRecommendations, checkAlerts, getModelPerformance]);
 
   // Error boundary
   if (error) {
@@ -102,6 +125,40 @@ export function AIInsightsPanel({ user, portfolio }: AIInsightsPanelProps) {
     );
   }
 
+  // AI Status indicator
+  const aiStatus = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center gap-2 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700 mb-6">
+          <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+          <span className="text-blue-700 dark:text-blue-300 font-medium">
+            🧠 AI Analysis in Progress...
+          </span>
+        </div>
+      );
+    }
+    
+    if (riskMetrics || recommendations.length > 0) {
+      return (
+        <div className="flex items-center gap-2 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700 mb-6">
+          <Brain className="h-5 w-5 text-green-500" />
+          <span className="text-green-700 dark:text-green-300 font-medium">
+            ✅ AI Analysis Complete - {recommendations.length} recommendations, {insights.length} insights
+          </span>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="flex items-center gap-2 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-700 mb-6">
+        <AlertTriangle className="h-5 w-5 text-yellow-500" />
+        <span className="text-yellow-700 dark:text-yellow-300 font-medium">
+          ⏳ Initializing AI Engine...
+        </span>
+      </div>
+    );
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto p-4">
       <div className="mb-6">
@@ -113,6 +170,9 @@ export function AIInsightsPanel({ user, portfolio }: AIInsightsPanelProps) {
           Advanced AI-powered analysis and recommendations for your portfolio and the Kenyan market
         </p>
       </div>
+
+      {/* AI Status Indicator */}
+      {aiStatus()}
 
       <Tabs defaultValue="analysis" className="w-full">
         <TabsList className="grid w-full grid-cols-5">

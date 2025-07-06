@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Dashboard Access</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { background: white; padding: 20px; border-radius: 8px; margin: 10px 0; }
+        .error { background: #ffe6e6; border: 1px solid #ff0000; }
+        .success { background: #e6ffe6; border: 1px solid #00ff00; }
+        .info { background: #e6f3ff; border: 1px solid #0066cc; }
+    </style>
+</head>
+<body>
+    <h1>Kenya Wealth AI - Dashboard Test</h1>
+    
+    <div class="container info">
+        <h2>🔍 Testing Connection</h2>
+        <p>This page tests if the frontend can reach the backend.</p>
+        <button onclick="testBackend()">Test Backend Connection</button>
+        <div id="backend-result"></div>
+    </div>
+
+    <div class="container">
+        <h2>📊 Direct API Test</h2>
+        <button onclick="testMarketData()">Test Market Data API</button>
+        <div id="market-result"></div>
+    </div>
+
+    <div class="container">
+        <h2>🔐 Authentication Test</h2>
+        <button onclick="testAuth()">Test Authentication Status</button>
+        <div id="auth-result"></div>
+    </div>
+
+    <div class="container">
+        <h2>🚀 Actions</h2>
+        <button onclick="goToAuth()">Go to Auth Page</button>
+        <button onclick="goToReactDashboard()">Go to React Dashboard</button>
+    </div>
+
+    <script>
+        async function testBackend() {
+            const result = document.getElementById('backend-result');
+            result.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:5000/health');
+                const data = await response.json();
+                result.innerHTML = `<div class="success">✅ Backend is running: ${data.message}</div>`;
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Backend connection failed: ${error.message}</div>`;
+            }
+        }
+
+        async function testMarketData() {
+            const result = document.getElementById('market-result');
+            result.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/market/summary');
+                const data = await response.json();
+                result.innerHTML = `<div class="success">✅ Market data available: NSE ${data.data.value}</div>`;
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Market data failed: ${error.message}</div>`;
+            }
+        }
+
+        async function testAuth() {
+            const result = document.getElementById('auth-result');
+            const token = localStorage.getItem('token');
+            
+            if (token) {
+                result.innerHTML = `<div class="success">✅ Token found in localStorage</div>`;
+            } else {
+                result.innerHTML = `<div class="info">ℹ️ No token in localStorage - need to login</div>`;
+            }
+        }
+
+        function goToAuth() {
+            window.location.href = '/auth';
+        }
+
+        function goToReactDashboard() {
+            window.location.href = '/dashboard';
+        }
+
+        // Auto-run tests
+        window.onload = function() {
+            testBackend();
+            testAuth();
+        };
+    </script>
+</body>
+</html>
